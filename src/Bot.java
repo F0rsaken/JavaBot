@@ -37,9 +37,15 @@ public class Bot {
         if (this.currentTarget == null) {
             //zakopac to w field
             this.currentTarget = new Point(state.getField().getWidth() / 2, state.getField().getHeight() / 2);
-        }
-
-        if (!lastTarget.equals(currentTarget)) {
+            this.plannedRoute = Decide.findBestRoute(
+                    myPosition,
+                    currentTarget,
+                    state.getField(),
+                    validMoves
+            );
+            //usuwanie powtorzonego punktu
+            this.plannedRoute.removePoint();
+        }else if (!currentTarget.equals(lastTarget)) {
             this.plannedRoute = Decide.findBestRoute(
                     myPosition,
                     currentTarget,
@@ -49,6 +55,8 @@ public class Bot {
             //usuwanie powtorzonego punktu
             this.plannedRoute.removePoint();
         }
+
+        //obsluga min i robakow
 
         return new Move(
                 getMoveType(

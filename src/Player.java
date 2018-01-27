@@ -16,15 +16,7 @@ public class Player {
         this.snippets = snippets;
     }
 
-    public int getSnippets() {
-        return this.snippets;
-    }
-
     public int getBombs() {
         return this.bombs;
-    }
-
-    public String getName() {
-        return this.name;
     }
 }

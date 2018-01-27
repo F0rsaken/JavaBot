@@ -5,19 +5,18 @@ import java.util.Queue;
 
 public class Decide {
     public static Route findBestRoute(Point start, Point end, Field field, ArrayList<MoveType> validMoves) {
-//        //TODO: uwzglednic bramy
+
         Route route = new Route();
         boolean found = false;
         Point currentPoint;
         int level = 1;
-        ArrayList<Point> gates = field.getGatesPositions();
 
         field.setFieldPoint(start, String.valueOf(0));
         Queue<Point> neighbours = new LinkedList<>();
         Point neighbour;
 
         for (MoveType move : validMoves) {
-            neighbour = move.executeMove(start, field.getWidth());
+            neighbour = move.executeMove(start);
             field.setFieldPoint(neighbour, String.valueOf(level));
             neighbours.add(neighbour);
             if (neighbour.equals(end)) {
@@ -25,21 +24,16 @@ public class Decide {
             }
         }
 
-        while (!found) {
+        while (!found && !neighbours.isEmpty()) {
+            System.err.println("Cos + " + level);
             currentPoint = neighbours.poll();
             validMoves = field.getValidMoves(currentPoint);
 
-            //sprawdzamy czy jest to brama
-            if (currentPoint.equals(gates.get(0))) {
-                validMoves.add(MoveType.LEFT);
-            }else if (currentPoint.equals(gates.get(1))) {
-                validMoves.add(MoveType.RIGHT);
-            }
-
             level = Integer.parseInt(field.getField()[currentPoint.x][currentPoint.y]);
             for ( MoveType move : validMoves) {
-                neighbour = move.executeMove(currentPoint, field.getWidth());
+                neighbour = move.executeMove(currentPoint);
                 if (neighbour.equals(end)) {
+                    field.setFieldPoint(neighbour, String.valueOf(level+1));
                     found = true;
                 }
                 if (!field.getField()[neighbour.x][neighbour.y].matches("\\d+")) {
@@ -57,7 +51,7 @@ public class Decide {
         while (!currentPoint.equals(start)) {
             validMoves = field.getValidMoves(currentPoint);
             for (MoveType move : validMoves) {
-                neighbour = move.executeMove(currentPoint, field.getWidth());
+                neighbour = move.executeMove(currentPoint);
                 if (field.getField()[neighbour.x][neighbour.y].matches("\\d+") && level-1 == Integer.parseInt(field.getField()[neighbour.x][neighbour.y])) {
                     route.addPoint(neighbour);
                     level = Integer.parseInt(field.getField()[neighbour.x][neighbour.y]);
@@ -78,7 +72,7 @@ public class Decide {
 
         switch (snippets.size()) {
             case 0:
-                return null;
+                return field.getCenter();
             case 1:
                 return snippets.get(0);
             default:
@@ -88,7 +82,7 @@ public class Decide {
                 int opponentDistance1 = minVectorLength(opponentPosition, snippets.get(0), mapWidth);
                 int opponentDistance2 = minVectorLength(opponentPosition, snippets.get(1), mapWidth);
 
-                if (playerDistance1 < playerDistance2) {
+                if (playerDistance1 <= playerDistance2) {
                     if (opponentDistance1 < playerDistance1) {
                         bestSnippet = snippets.get(1);
                     }else {
@@ -103,11 +97,6 @@ public class Decide {
                 }
 
                 return bestSnippet;
-//            default:
-                //sortowaniedla wiekszej ilosci po graczu i przeciwniku
-
-//                return null;
-
         }
     }
 
@@ -126,5 +115,22 @@ public class Decide {
         }else {
             return withGate;
         }
+    }
+
+    public static MoveType checkExplodingBombs (Field field, Point playerPos) {
+        ArrayList<Point> bombs = field.getTickingBombPositions();
+        MoveType avoid = null;
+
+        for (Point bomb : bombs) {
+            //sprawdzamy czy bomba znajduje sie na naszej drodze oraz czy ma zaraz wybuchnac
+            if ((bomb.x == playerPos.x || bomb.y == playerPos.y) && field.getField()[bomb.x][bomb.y].charAt(1) == '1') {
+                if (field.isBombGonnaHit(bomb, playerPos)) {
+                    avoid = MoveType.PASS;
+                    return avoid;
+                }
+            }
+        }
+
+        return avoid;
     }
 }

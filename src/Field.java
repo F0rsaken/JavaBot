@@ -80,7 +80,6 @@ public class Field {
                         parsePlayerCell(cellPart.charAt(1), x, y);
                         break;
                     case 'S':
-                        // TODO: store spawn points
                         break;
                     case 'G':
                         parseGateCell (cellPart.charAt(1), x, y);
@@ -193,8 +192,6 @@ public class Field {
                     return false;
                 case 'E':
                     return false;
-                case 'w':
-                    return false;
                 default:
                     return true;
             }
@@ -261,6 +258,65 @@ public class Field {
 
     public String[][] getField() {
         return field;
+    }
+
+    public boolean isBombGonnaHit(Point bomb, Point player) {
+        int x, y;
+        if (bomb.x == player.x) {
+            x = player.x;
+            if (bomb.y > player.y) {
+                for (y = player.y; y < bomb.y; y++) {
+                    if (this.field[x][y].charAt(0) == 'x') {
+                        return false;
+                    }
+                }
+                return true;
+            }else {
+                for (y = bomb.y; y < player.y; y++) {
+                    if (this.field[x][y].charAt(0) == 'x') {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }else {
+            y = player.y;
+            if (bomb.x > player.x) {
+                for (x = player.x; x < bomb.x; x++) {
+                    if (this.field[x][y].charAt(0) == 'x') {
+                        return false;
+                    }
+                }
+                return true;
+            }else {
+                for (x = bomb.x; x < player.x; x++) {
+                    if (this.field[x][y].charAt(0) == 'x') {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+    }
+
+    public boolean isBugNearby(Point playerPos) {
+        int nearMaxDistance = 8; // odleglosc miedzy punktami oddalonymi o maximum dx = 2 i dy = 2
+        int currentDistance;
+
+        for (Point enemyPos : this.enemyPositions) {
+            currentDistance = ((enemyPos.x - playerPos.x)^2) + ((enemyPos.y - playerPos.y)^2);
+            if (currentDistance <= nearMaxDistance) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Point getCenter() {
+        int x = (this.width-1)/2;
+        int y = this.height/2;
+        return new Point(x, y);
     }
 
 }

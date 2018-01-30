@@ -6,7 +6,6 @@ public class Bot {
     private String character;
     private Route plannedRoute = new Route();
     private Point currentTarget;
-    private Point myPosition;
 
     private Bot() {
         this.character = "bixie";
@@ -22,30 +21,18 @@ public class Bot {
      * @return A Move object
      */
     public Move doMove(BotState state) {
-        this.myPosition = state.getField().getMyPosition();
+        Point myPosition = state.getField().getMyPosition();
         ArrayList<MoveType> validMoves = state.getField().getValidMoves(myPosition);
 
         if (validMoves.size() <= 0) {
-            // sprawdzic gdzie jest bug i wybrac lepszy(mniej gro¼ny)
-            return new Move(); // No valid moves, pass
+            return new Move();
         }
 
         //sprawdzanie, czy jest kod w lepszej lokalizacji
         Point lastTarget = currentTarget;
         this.currentTarget = Decide.selectBestSnipet(state.getField());
-        //null, jezeli nie ma kodow do zebrania
-        if (this.currentTarget == null) {
-            //zakopac to w field
-            this.currentTarget = new Point(state.getField().getWidth() / 2, state.getField().getHeight() / 2);
-            this.plannedRoute = Decide.findBestRoute(
-                    myPosition,
-                    currentTarget,
-                    state.getField(),
-                    validMoves
-            );
-            //usuwanie powtorzonego punktu
-            this.plannedRoute.removePoint();
-        }else if (!currentTarget.equals(lastTarget)) {
+
+        if (!currentTarget.equals(lastTarget)) {
             this.plannedRoute = Decide.findBestRoute(
                     myPosition,
                     currentTarget,
@@ -56,7 +43,31 @@ public class Bot {
             this.plannedRoute.removePoint();
         }
 
-        //obsluga min i robakow
+        MoveType avoid = Decide.checkExplodingBombs(state.getField(), plannedRoute.getNextPoint());
+        if (avoid != null) {
+            return new Move(avoid);
+        }
+
+        if (state.getField().isBugNearby(myPosition)) {
+            this.plannedRoute = Decide.findBestRoute(
+                    myPosition,
+                    currentTarget,
+                    state.getField(),
+                    validMoves
+            );
+            //usuwanie powtorzonego punktu
+            this.plannedRoute.removePoint();
+        }
+
+        if (state.getPlayers().get(state.getMyName()).getBombs() != 0 && state.getField().isBugNearby(myPosition)) {
+            return new Move(
+                    getMoveType(
+                            myPosition,
+                            plannedRoute.extractPoint()
+                    ),
+                    2
+            );
+        }
 
         return new Move(
                 getMoveType(

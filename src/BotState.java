@@ -41,14 +41,6 @@ public class BotState {
         this.roundNumber = roundNumber;
     }
 
-    public int getTimebank() {
-        return this.timebank;
-    }
-
-    public int getRoundNumber() {
-        return this.roundNumber;
-    }
-
     public HashMap<String, Player> getPlayers() {
         return this.players;
     }
@@ -59,17 +51,5 @@ public class BotState {
 
     public String getMyName() {
         return this.myName;
-    }
-
-    public int getMaxTimebank() {
-        return this.MAX_TIMEBANK;
-    }
-
-    public int getTimePerMove() {
-        return this.TIME_PER_MOVE;
-    }
-
-    public int getMaxRound() {
-        return this.MAX_ROUNDS;
     }
 }
